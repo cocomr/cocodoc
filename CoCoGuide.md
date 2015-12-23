@@ -150,13 +150,13 @@ Of class `coco::TaskContext`
     * *args*: the list of the arguments to be passed to the operations when called
     * Example of usage from *component_1.cpp*
 	
-    ```cpp
-    coco::TaskContext *task = COCO_TASK("EzTask2") 
-		if (task)
-			// Enqueue on task "EzTask2" the operation hello()
-			// This works only if EzTask2 add hello as operation
-			task->enqueueOperation<void(int)>("hello", 42);     
-    ```
+```cpp
+coco::TaskContext *task = COCO_TASK("EzTask2") 
+if (task)
+	// Enqueue on task "EzTask2" the operation hello()
+	// This works only if EzTask2 add hello as operation
+	task->enqueueOperation<void(int)>("hello", 42);     
+```
 	
 * `template <class Sig>
 	std::function<Sig> operation(const std::string & name)`
