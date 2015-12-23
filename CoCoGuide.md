@@ -149,6 +149,7 @@ Of class `coco::TaskContext`
     * *name*: the name of the operation
     * *args*: the list of the arguments to be passed to the operations when called
     * Example of usage from *component_1.cpp*
+	
     ```cpp
     coco::TaskContext *task = COCO_TASK("EzTask2") 
 		if (task)
@@ -156,6 +157,7 @@ Of class `coco::TaskContext`
 			// This works only if EzTask2 add hello as operation
 			task->enqueueOperation<void(int)>("hello", 42);     
     ```
+	
 * `template <class Sig>
 	std::function<Sig> operation(const std::string & name)`
     * return an handler for the function associated with the operation "name"
@@ -168,6 +170,7 @@ Of class `coco::PortBase`
     * return the number of ports connected to this one
 
 Of class `coco::InputPort`
+
 * `FlowStatus read(T & output)`
     * store in *output* the value in the port
         * *T* is the type of the port
