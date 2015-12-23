@@ -140,7 +140,8 @@ as seen above it is used to register either a TaskContext of a PeerTask class.
 `COCO_TASK("TaskName")`: return a pointer to the the TaskContext object with name "TaskName" if it exists, *nullptr* otherwise.
 
 #### Member Functions ####
-Of class `coco::TaskContext` 
+Of class `coco::TaskContext`
+
 * `std::string instantiationName()`
     * return the name given in the XML configuration file. If no name was give return the class name
 * `template <class Sig, class ...Args>
@@ -160,6 +161,7 @@ Of class `coco::TaskContext`
     * return an handler for the function associated with the operation "name"
 
 Of class `coco::PortBase`
+
 * `bool isConnected()`
     * return true if the port is connected to at least another port
 * `int connectionsCount()`
@@ -177,6 +179,7 @@ Of class `coco::InputPort`
     * return a FlowStatus object containing the result status of the read
 
 of class `coco::OutputPort`
+
 * `void write(T & input)`
     * write *input* in all the connected ports
 * `void write(T &input, const std::string &name)`
