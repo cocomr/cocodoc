@@ -133,6 +133,56 @@ Your peer class has to to ovveride only `info()` and `onConfig()`. The purpose o
 
 See the examples in the folder *samples* for more informations.
 
+#### Usefull Macro ####
+`COCO_REGISTER("TaskName")`:
+as seen above it is used to register either a TaskContext of a PeerTask class.
+
+`COCO_TASK("TaskName")`: return a pointer to the the TaskContext object with name "TaskName" if it exists, *nullptr* otherwise.
+
+#### Member Functions ####
+Of class `coco::TaskContext` 
+* `std::string instantiationName()`
+    * return the name given in the XML configuration file. If no name was give return the class name
+* `template <class Sig, class ...Args>
+	bool enqueueOperation(const std::string & name, Args... args)`, 
+    * *name*: the name of the operation
+    * *args*: the list of the arguments to be passed to the operations when called
+    * Example of usage from *component_1.cpp*
+    ```cpp
+    coco::TaskContext *task = COCO_TASK("EzTask2") 
+		if (task)
+			// Enqueue on task "EzTask2" the operation hello()
+			// This works only if EzTask2 add hello as operation
+			task->enqueueOperation<void(int)>("hello", 42);     
+    ```
+* `template <class Sig>
+	std::function<Sig> operation(const std::string & name)`
+    * return an handler for the function associated with the operation "name"
+
+Of class `coco::PortBase`
+* `bool isConnected()`
+    * return true if the port is connected to at least another port
+* `int connectionsCount()`
+    * return the number of ports connected to this one
+
+Of class `coco::InputPort`
+* `FlowStatus read(T & output)`
+    * store in *output* the value in the port
+        * *T* is the type of the port
+    * return a FlowStatus object containing the result status of the read
+        * `enum FlowStatus { NO_DATA, OLD_DATA, NEW_DATA };`
+    * in case the port is attached to multiple other ports it uses a round-robin schedule to go through all of them
+* `FlowStatus readAll(std::vector<T> & output)`
+    * same as above but in this case read from all the connections and store the result in the vector, no way to know from which connection comes which data
+    * return a FlowStatus object containing the result status of the read
+
+of class `coco::OutputPort`
+* `void write(T & input)`
+    * write *input* in all the connected ports
+* `void write(T &input, const std::string &name)`
+    * write *input* in the port with name *name*
+
+
 ### Launcher ###
 Once you have created your componets and you have compiled them in shared libraries you have to specify to CoCo how this components have to be run.
 
