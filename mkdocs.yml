@@ -1,0 +1,3 @@
+site_name: CoCo Lib Documentation
+theme: readthedocs
+docs_dir: .
