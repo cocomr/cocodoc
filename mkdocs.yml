@@ -1,3 +1,6 @@
 site_name: CoCo Lib Documentation
 theme: readthedocs
 docs_dir: .
+pages:
+- {Home: index.md}
+- {"Computer Vision": computervision.md}

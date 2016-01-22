@@ -12,6 +12,9 @@ It has been widely used in robotics applications, ranging from Augmented Reality
 
 It is also compatible with ROS allowing it to be used in any kind of high-level control applications.
 
+##Modules
+[Computer Vision]
+
 Why and What
 ------------
 
