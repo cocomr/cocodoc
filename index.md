@@ -75,7 +75,6 @@ To create a TaskContext your class has to inherit from `coco::TaskContext` and y
 
 The class has to override the following method:
 
-* `info() : std::string` returns a description of the component
 * `init() : void` called in the main thread before moving the component in its thread
 * `onConfig() : void` first function called after been moved in the new thread
 * `onUpdate() : void` main function called at every loop iteration
@@ -84,10 +83,6 @@ The class has to override the following method:
 class MyComponent : public coco::TaksContext
 {
 public:
-	virtual std::string info()
-	{
-		return "MyComponent does ...";
-	}
 	virtual void init()
 	{}
 	virtual void onConfig()
@@ -142,6 +137,12 @@ as seen above it is used to register either a TaskContext of a PeerTask class.
 
 `COCO_TASK("TaskName")`: return a pointer to the the TaskContext object with name "TaskName" if it exists, *nullptr* otherwise.
 
+`COCO_NUM_TASK`: return the number of tasks (not peers) instantiated.
+
+`COCO_CONFIGURATION_COMPLETED`: return whether all the components have completed the `onConfig` function.
+
+`COCO_FIND_RESOURCE("what")`: look into the know path for the resource what, and if it founds it return the complete path of the resource. The know path will be explained later.
+
 #### Member Functions ####
 Of class `coco::TaskContext`
 
@@ -152,7 +153,18 @@ Of class `coco::TaskContext`
     * *name*: the name of the operation
     * *args*: the list of the arguments to be passed to the operations when called
     * Example of usage from *component_1.cpp*
-	
+* `template <class Sig, class ...Args>
+	bool enqueueOperation(std::function<void(typename std::function<Sig>::result_type)> return_fx, std::string & name, Args... args)`
+	* *return_fx*: the function that is called passing to it the return value of the operation
+	* *name*: the name of the operation
+	* *args*: the list of the arguments to be passed to the operations when called
+* `TaskState 	state()`
+	* return the current state of the task, the possible states are:
+		* INIT = 0, the task is in initialization phase.
+		* PRE_OPERATIONAL = 1,  the task is running the enqueued operations.
+		* RUNNING = 2, the task is running the `onUpdate` function.
+		* IDLE = 3, the task is idle, either waiting on a timeout to expire or on a trigger.
+		* STOPPED = 4, the task has been stopped and it is waiting to terminate.
 ```cpp
 coco::TaskContext *task = COCO_TASK("EzTask2") 
 if (task)
@@ -215,6 +227,8 @@ To do so you have to create an xml file with the following specifications:
 ```
 
 * `resourcepaths`: allows to specify the path where to find the compoennt libraries and all the resources file passed to the attributes
+The path can be either absolute or relative; to improve code portability CoCo support the use of the environment variable `COCO_PREFIX_PATH`. All the path in `resourcepaths` will be concatenated with the path in the environment variable and will be used to retrieve all the resources needed by the applications.
+`COCO_FIND_RESOURCE` uses this path to retrieve the path passed in input.
 
 ```xml
 <resourcespaths>
