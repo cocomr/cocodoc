@@ -45,6 +45,7 @@ Installation
 -----------
 
 CoCo comes with a cmake file.
+
 `$ mkdir build && cd build
 $ cmake .. -DCMAKE_INSTALL_PREFIX=prefix/to/install/directory
 $ make -j
@@ -57,6 +58,7 @@ The html documentation will be available in `coco/doc/html/index.html`
 The last command will install the binary `coco_launcher` that is the launcher of every CoCo application and `libcoco.so`.
 
 To compile your application with CoCo add to your CMakeLists.txt file
+
 `find_package(coco REQUIRED)
 include_directories(${coco_INCLUDE_DIRS})
 target_link_libraries(... ${coco_LIBS} ...)`
