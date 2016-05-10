@@ -156,7 +156,7 @@ as seen above it is used to register either a TaskContext of a PeerTask class.
 
 `COCO_TERMINATE`: safety terminate the application calling `stop()` function for all the components.
 
-#### Member Functions ####
+#### <a name="member-functions"></a>Member Functions ####
 Of class `coco::TaskContext`
 
 * `std::string instantiationName()`
@@ -229,7 +229,7 @@ To do so you have to create an xml file with the following specifications:
 </package>
 ```
 
-* `logconfig`: (more information on how to use the log utilities are provided in the [Logging]() section)
+* `logconfig`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
 
 ```xml
 <logconfig>
@@ -369,7 +369,7 @@ To do so you have to create an xml file with the following specifications:
 ```
 		
 ### Utils ###
-#### Logging ####
+####<a name="logging"></a> Logging ####
 CoCo provides logging features.
 
 * `COCO_LOG(level) << "this is a log " << i << ...`
