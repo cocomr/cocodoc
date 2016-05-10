@@ -229,7 +229,7 @@ To do so you have to create an xml file with the following specifications:
 </package>
 ```
 
-* `logconfig`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
+* `logconfig`: (more information on how to use the log utilities are provided in the [Logging]() section)
 
 ```xml
 <logconfig>
