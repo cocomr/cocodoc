@@ -196,11 +196,15 @@ Of class `coco::PortBase`
 
 * `bool isConnected()`
     * return true if the port is connected to at least another port
-* `int connectionsCount()`
+* `unsigned connectionsCount()`
     * return the number of ports connected to this one
+* `unsigned queueLength()`
+	* return the number of data blocks in the port. If the port has several connections, the length is equal to the sum of all the data in all the connections
 
 Of class `coco::InputPort`
 
+* `FlowStatus hasNewData()`
+	* return whether the port contains new data
 * `FlowStatus read(T & output)`
     * store in *output* the value in the port
         * *T* is the type of the port
@@ -231,26 +235,26 @@ To do so you have to create an xml file with the following specifications:
 </package>
 ```
 
-* `logconfig`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
+* `log`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
 
 ```xml
-<logconfig>
+<log>
     <levels>0 1 2 3 4</levels> <!-- logging enabled levels -->
     <outfile>log2.txt</outfile> <!--file where to write the logging, if empty or missing no log file produced -->
     <types>debug err log</types> <!-- enabled types -->
-</logconfig>
+</log>
 ```
 
-* `resourcepaths`: allows to specify the path where to find the component libraries and all the resources file passed to the attributes. The paths can be either absolute or relative; to improve code portability CoCo support the use of the environment variable `COCO_PREFIX_PATH`.  All the path in `resourcepaths` will be concatenated with the paths in the environment variable and will be used to retrieve all the resources needed by the applications. `COCO_PREFIX_PATH` supports multiple paths by simply concatenating them whith a semicolumn (:).
+* `paths`: allows to specify the path where to find the component libraries and all the resources file passed to the attributes. The paths can be either absolute or relative; to improve code portability CoCo support the use of the environment variable `COCO_PREFIX_PATH`.  All the path in `paths` will be concatenated with the paths in the environment variable and will be used to retrieve all the resources needed by the applications. `COCO_PREFIX_PATH` supports multiple paths by simply concatenating them with a semi-column (:).
 `COCO_FIND_RESOURCE("what")` uses these paths to retrieve the resource passed in input.
 
 ```xml
-<resourcespaths>
-	<librariespath>path/to/component/libraries</librariespath>
-	<librariespath>path/to/more/component/libraries</librariespath>
+<paths>
+	<path>path/to/component/libraries</librariespath>
+	<path>path/to/more/component/libraries</librariespath>
 	<path>path/to/resources</path>
 	<path>path/to/more/resources</path>
-</resourcespaths>
+</paths>
 ```
 * `components`: list of *component*
 
@@ -281,7 +285,9 @@ To do so you have to create an xml file with the following specifications:
             * *name*: the name of the attribute as specified in the class definition
             * *value*: the value, all the base C++ type are supported plus string
             * *type*: the supported types are:
-                * *file*: when the value of the attribute is a resource name. In this way you specify to the launcher to look at the path specified above to find the resource and concat the whole path in the string before assign it to the attribute; this allow the configuration file to be more independent from the running pc.
+                * *file*: when the value of the attribute is a resource name. In this way you specify to the launcher to look at the path specified above to find the resource and concat the whole path in the string before assign it to the attribute; this allow the configuration file to be more independent from the 
+           * Every component has a list of standard attribute already associated with them:
+	           * *wait_all_trigger*: In case of a component with multiple *event* ports setting this attribute to 1 tells the run-time to trigger the execution of the component only when data is present in all the ports. In caso of a non triggered component or a peer this attribute has no effect
     * `components`: List of PeerTask attached to this components. A component can have all the peers it wants. Also peers can have their own PeerTask going deeper as wanted.
 
 
@@ -336,7 +342,7 @@ To do so you have to create an xml file with the following specifications:
 
 ```xml
 <activity>
-	<schedulepolicy activity="parallel" type="periodic" value="1000" />
+	<schedule activity="parallel" type="periodic" value="1000" />
 	<components>
 		<component>task_name</component>
 		<component>task_name</component>
@@ -345,7 +351,7 @@ To do so you have to create an xml file with the following specifications:
 </activity>
 ```
 
-* `schedulepolicy` has several attributes
+* `schedule` has several attributes
     * `activity`
 	    * *parallel*: executed in a new dedicated thread
 		* *sequential*: executed in the main process thread. No more than one sequential activity is allowed per application
@@ -417,5 +423,7 @@ To run a CoCo application it is possible to use either the `coco_launcher` execu
 	Enable the collection of statistics of the execution of each component. The information are printed every 5 seconds, to change this value pass a new time to the option.
 * -g [ --graph ] arg          
 	Create the graph of the various components and of their connections.
+* -d [--disable] args
+	Accept a list of components name. These components will be not instantiated. This applies both to normal task and to peers. 
  
 
