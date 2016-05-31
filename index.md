@@ -159,6 +159,8 @@ as seen above it is used to register either a TaskContext of a PeerTask class.
 `COCO_TERMINATE`: safety terminate the application calling `stop()` function for all the components.
 
 #### <a name="member-functions"></a>Member Functions ####
+For a complete class reference documentation look at the doxygen documentation contained in the library doc folder. To compile it just type `make doc`.
+
 Of class `coco::TaskContext`
 
 * `std::string instantiationName()`
@@ -224,7 +226,7 @@ of class `coco::OutputPort`
 
 
 ### Launcher ###
-Once you have created your componets and you have compiled them in shared libraries you have to specify to CoCo how this components have to be run.
+Once you have created your componets and you have compiled them in shared libraries you have to specify to CoCo how these components have to be run. The run-time choices to be made include: setting the values of the attributes, associating to task eventual peers, setting connections and allocating tasks over threads.
 
 To do so you have to create an xml file with the following specifications:
 
@@ -305,7 +307,7 @@ To do so you have to create an xml file with the following specifications:
 </connections>
 ```
 
-* `connection`:
+
 
 ```xml
 <connection data="BUFFER" policy="LOCKED" transport="LOCAL" buffersize="10">
@@ -313,16 +315,17 @@ To do so you have to create an xml file with the following specifications:
 	<dest task="NameForExecution2" port="port_name_in"/>
 </connection>	
 ```
-* *data*: type of port buffer
-	* DATA: buffer lenght 1
-	* BUFFER: FIFO buffer of lenght "buffersize"
-	* CIRCULAR: circula FIFO buffer of lenght "buffersize"
-* *policy*: policy of the locking system to be used
-	* LOCKED: guarantee mutually exclusive access
-	* UNSYNC: no synchronization applied
-* *transport*: 
-	* LOCAL: shared memory for thread
-	* IPC: communication between processes (not yet implemented)
+* `connection`:
+	* *data*: type of port buffer
+		* DATA: buffer lenght 1
+		* BUFFER: FIFO buffer of lenght "buffersize"
+		* CIRCULAR: circula FIFO buffer of lenght "buffersize"
+	* *policy*: policy of the locking system to be used
+		* LOCKED: guarantee mutually exclusive access
+		* UNSYNC: no synchronization applied
+	* *transport*: 
+		* LOCAL: shared memory for thread
+		* IPC: communication between processes (not yet implemented)
 
 
 * `activities` contains the collections of activity.
@@ -338,34 +341,48 @@ To do so you have to create an xml file with the following specifications:
 	</activity>
 </activities>
 ```
-* `activity`: each *activity* is associated with a thread and can contains multiple *components*. For each activity we specify how it has to be executed and the *components* to execute
+
 
 ```xml
 <activity>
 	<schedule activity="parallel" type="periodic" value="1000" />
 	<components>
-		<component>task_name</component>
-		<component>task_name</component>
+		<component name="task_name" />
+		<component name="another_task_name" />
 		...			
 	</components>
 </activity>
 ```
-
-* `schedule` has several attributes
-    * `activity`
-	    * *parallel*: executed in a new dedicated thread
-		* *sequential*: executed in the main process thread. No more than one sequential activity is allowed per application
-    * `type`
-	    * *periodic*: the activity run periodically with period "value" expressed in millisecond
-		* *triggered*: the activity run only when triggered by receiving data in an event port of one of its component
-            * NOTE: if a triggered activity contains more than one component when it is triggered it will execute all the component inside, no matter for which component the triggered was ment.	
-        * *value*: the period in millisecond.
-            * It is ignored if *type* if *triggered*
-		* *affinity*: id of the core where to pin the thread execution. Be sure that id < #cores 
-		* *exclusive_affinity*: id of the core where to exclusive pin the thread execution. All other CoCo thread will be excluded to execute on that core.
+* `activity`: each *activity* is associated with a thread and can contains multiple *components*. For each activity we specify how it has to be executed and the *components* to execute
+	* `schedule` has several attributes
+	    * `activity`
+		    * *parallel*: executed in a new dedicated thread
+			* *sequential*: executed in the main process thread. No more than one sequential activity is allowed per application
+	    * `type`
+		    * *periodic*: the activity run periodically with period "value" expressed in millisecond
+			* *triggered*: the activity run only when triggered by receiving data in an event port of one of its component
+	            * NOTE: if a triggered activity contains more than one component when it is triggered it will execute all the component inside, no matter for which component the triggered was ment.	
+	        * *value*: the period in millisecond.
+	            * It is ignored if *type* if *triggered*
+			* *affinity*: id of the core where to pin the thread execution. Be sure that id < #cores 
+			* *exclusive_affinity*: id of the core where to exclusive pin the thread execution. All other CoCo thread will be excluded to execute on that core.
           
-
-
+```xml
+<pipeline>
+	<schedule activity="parallel/sequential"/>
+	<components>
+		<component name="task_name1" out="out_port"/>
+		<component name="task_name2" in="in_port" out="out_port"/>
+		<component name="task_name3" in="in_port"/>		
+		...			
+	</components>
+</activity>
+```
+* `pipeline`: this tag allows to specify pipelines of tasks. It doesn't add semantic to the execution as it is possible to create a pipeline using *activity* and the proper connections. The use of this tag allows to be more clear and to avoid errors, such as forgetting connections or not setting an activity as triggered.
+	* `schedule`: allows to specify whether the components will be parallel or executed sequential.
+		* `activity`
+			* `parallel`:  each component will run on a separate thread
+			* `sequential`: all the components will run on the same thread, can be useful when the tasks have a computation time much lower than the service time
 	
 * `includes`: allows to include others XML configuration files with the same structures and load the components and connections specified in the file. For each specified include file all the resource paths components and connections will be loaded. Any activity specifications or log configuration will be ignored. It is possible to specify connections between components described in different files, as well as associate them in activities. This is because all the actual loading is done after all the XML files have been parsed. Of course an included XML file can includes other xml files.
 ```xml
