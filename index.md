@@ -31,10 +31,12 @@ Orocos inspired, but:
 
 Folder Structure
 ---------------
-* core: contains the core library features
-* util: contains some utilities that are independent from the core files and can also be used standalone. These features are:
-    * logging
-    * profiling
+* core: contains the core library features and the utilities
+    * util: contains some utilities that are independent from the core files and can also be used standalone. These features are:
+        * logging
+        * profiling
+        * memory
+    * web_server
 * launcher: contains the executable that allows to launch a CoCo application
 * ros_launcher: same as launcher but as ROS node
 * extern: the xml parser library
@@ -438,6 +440,8 @@ To run a CoCo application it is possible to use either the `coco_launcher` execu
 	Xml file with the configurations of the application.
 * -p [ --profiling ] [=arg(=5)] 
 	Enable the collection of statistics of the execution of each component. The information are printed every 5 seconds, to change this value pass a new time to the option.
+* -w [--web_server] [=arg(=7707)]
+	Start the web server on port *arg*. When the we web server is running all the information usually printed in the shell will be visualized in the browser.
 * -g [ --graph ] arg          
 	Create the graph of the various components and of their connections.
 * -d [--disable] args
