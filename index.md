@@ -2,13 +2,12 @@ Compact Component Library: CoCo
 ===========================
 
 A C++ framework for high-performance multi-thread shared memory applications.
-Split your application in component that can run in parallel to each other or be encapsulated one in the other.
-Components can run periodically or be triggered by events. 
-CoCo provides also a ports system allowing the components to communicate with very low overhead without worrying of concurrency issues.
+CoCo allows to split your application in components and decide at run-time, through a configuration file, which one to instantiate, on how many thread and how they communicate with each other to exchange data.
+The framework is mainly focused on bringing the paradigm of high-performance computing to soft real-time application allowing to exploit the power of multi-core architectures.
 
 This framework has been developed in the Percro Laboratory of the Scuola Superiore Sant'Anna, Pisa by Filippo Brizzi and Emanuele Ruffaldi.
 
-It has been widely used in robotics applications, ranging from Augmented Reality for teleoperation to haptic-rendering for virtual training. 
+It has been widely used in robotics applications, ranging from augmented reality for teleoperation to haptic rendering for virtual training. 
 
 It is also compatible with ROS allowing it to be used in any kind of high-level control applications.
 
@@ -17,17 +16,32 @@ It is also compatible with ROS allowing it to be used in any kind of high-level 
 
 Why and What
 ------------
+CoCo desing has been inspired by the Orocos framework, but with a different aims. While the Orocos framework targets (hard) real-time application as low level robotic control, thus requiring special Linux kernel to be executed, CoCo aims at providing a framework for high level soft real-time application as robotic vision, haptic rendering and sensors integration.
 
-Orocos inspired, but:
+The main characteristic of CoCo are:
 
 * Lightweight library fully based on C++11.
+* Possibility to configure at run-time:
+	* Components and their attributes
+	* Connections between components
+	* Number of thread to be instantied
+	* Mapping between threads and components
 * Timing oriented:
-	* Real-time focused
-	* Latency oriented
-	* Low overhead communications
+	* Support for Linux real-time schedulers
+	* Zero overhead communications via shared pointer and smart memory allocation
+	* Embedded timing profiler
+		* Automatic service time and execution time calculation for every component
+		* Automatic latency calculation between two component
 * ROS compliant
+* High-performance computing features, configurable at run-time:
+	* Pipeline 
+	* Farm, number of workers specified at run-time
+	* Farm of pipeline
+* Web based visualization tool to visualize components connections, timing statistics via tables and graphics
 
--> Simpler and Powerful
+
+
+Simple and Powerful!!
 
 Folder Structure
 ---------------
