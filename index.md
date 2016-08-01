@@ -45,10 +45,12 @@ Simple and Powerful!!
 
 Folder Structure
 ---------------
-* core: contains the core library features
-* util: contains some utilities that are independent from the core files and can also be used standalone. These features are:
-    * logging
-    * profiling
+* core: contains the core library features and the utilities
+    * util: contains some utilities that are independent from the core files and can also be used standalone. These features are:
+        * logging
+        * profiling
+        * memory
+    * web_server
 * launcher: contains the executable that allows to launch a CoCo application
 * ros_launcher: same as launcher but as ROS node
 * extern: the xml parser library
@@ -173,6 +175,8 @@ as seen above it is used to register either a TaskContext of a PeerTask class.
 `COCO_TERMINATE`: safety terminate the application calling `stop()` function for all the components.
 
 #### <a name="member-functions"></a>Member Functions ####
+For a complete class reference documentation look at the doxygen documentation contained in the library doc folder. To compile it just type `make doc`.
+
 Of class `coco::TaskContext`
 
 * `std::string instantiationName()`
@@ -210,11 +214,15 @@ Of class `coco::PortBase`
 
 * `bool isConnected()`
     * return true if the port is connected to at least another port
-* `int connectionsCount()`
+* `unsigned connectionsCount()`
     * return the number of ports connected to this one
+* `unsigned queueLength()`
+	* return the number of data blocks in the port. If the port has several connections, the length is equal to the sum of all the data in all the connections
 
 Of class `coco::InputPort`
 
+* `FlowStatus hasNewData()`
+	* return whether the port contains new data
 * `FlowStatus read(T & output)`
     * store in *output* the value in the port
         * *T* is the type of the port
@@ -234,7 +242,7 @@ of class `coco::OutputPort`
 
 
 ### Launcher ###
-Once you have created your componets and you have compiled them in shared libraries you have to specify to CoCo how this components have to be run.
+Once you have created your componets and you have compiled them in shared libraries you have to specify to CoCo how these components have to be run. The run-time choices to be made include: setting the values of the attributes, associating to task eventual peers, setting connections and allocating tasks over threads.
 
 To do so you have to create an xml file with the following specifications:
 
@@ -245,26 +253,26 @@ To do so you have to create an xml file with the following specifications:
 </package>
 ```
 
-* `logconfig`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
+* `log`: (more information on how to use the log utilities are provided in the [Logging](#logging) section)
 
 ```xml
-<logconfig>
+<log>
     <levels>0 1 2 3 4</levels> <!-- logging enabled levels -->
     <outfile>log2.txt</outfile> <!--file where to write the logging, if empty or missing no log file produced -->
     <types>debug err log</types> <!-- enabled types -->
-</logconfig>
+</log>
 ```
 
-* `resourcepaths`: allows to specify the path where to find the component libraries and all the resources file passed to the attributes. The paths can be either absolute or relative; to improve code portability CoCo support the use of the environment variable `COCO_PREFIX_PATH`.  All the path in `resourcepaths` will be concatenated with the paths in the environment variable and will be used to retrieve all the resources needed by the applications. `COCO_PREFIX_PATH` supports multiple paths by simply concatenating them whith a semicolumn (:).
+* `paths`: allows to specify the path where to find the component libraries and all the resources file passed to the attributes. The paths can be either absolute or relative; to improve code portability CoCo support the use of the environment variable `COCO_PREFIX_PATH`.  All the path in `paths` will be concatenated with the paths in the environment variable and will be used to retrieve all the resources needed by the applications. `COCO_PREFIX_PATH` supports multiple paths by simply concatenating them with a semi-column (:).
 `COCO_FIND_RESOURCE("what")` uses these paths to retrieve the resource passed in input.
 
 ```xml
-<resourcespaths>
-	<librariespath>path/to/component/libraries</librariespath>
-	<librariespath>path/to/more/component/libraries</librariespath>
+<paths>
+	<path>path/to/component/libraries</librariespath>
+	<path>path/to/more/component/libraries</librariespath>
 	<path>path/to/resources</path>
 	<path>path/to/more/resources</path>
-</resourcespaths>
+</paths>
 ```
 * `components`: list of *component*
 
@@ -295,7 +303,9 @@ To do so you have to create an xml file with the following specifications:
             * *name*: the name of the attribute as specified in the class definition
             * *value*: the value, all the base C++ type are supported plus string
             * *type*: the supported types are:
-                * *file*: when the value of the attribute is a resource name. In this way you specify to the launcher to look at the path specified above to find the resource and concat the whole path in the string before assign it to the attribute; this allow the configuration file to be more independent from the running pc.
+                * *file*: when the value of the attribute is a resource name. In this way you specify to the launcher to look at the path specified above to find the resource and concat the whole path in the string before assign it to the attribute; this allow the configuration file to be more independent from the 
+           * Every component has a list of standard attribute already associated with them:
+	           * *wait_all_trigger*: In case of a component with multiple *event* ports setting this attribute to 1 tells the run-time to trigger the execution of the component only when data is present in all the ports. In caso of a non triggered component or a peer this attribute has no effect
     * `components`: List of PeerTask attached to this components. A component can have all the peers it wants. Also peers can have their own PeerTask going deeper as wanted.
 
 
@@ -313,7 +323,7 @@ To do so you have to create an xml file with the following specifications:
 </connections>
 ```
 
-* `connection`:
+
 
 ```xml
 <connection data="BUFFER" policy="LOCKED" transport="LOCAL" buffersize="10">
@@ -321,16 +331,17 @@ To do so you have to create an xml file with the following specifications:
 	<dest task="NameForExecution2" port="port_name_in"/>
 </connection>	
 ```
-* *data*: type of port buffer
-	* DATA: buffer lenght 1
-	* BUFFER: FIFO buffer of lenght "buffersize"
-	* CIRCULAR: circula FIFO buffer of lenght "buffersize"
-* *policy*: policy of the locking system to be used
-	* LOCKED: guarantee mutually exclusive access
-	* UNSYNC: no synchronization applied
-* *transport*: 
-	* LOCAL: shared memory for thread
-	* IPC: communication between processes (not yet implemented)
+* `connection`:
+	* *data*: type of port buffer
+		* DATA: buffer lenght 1
+		* BUFFER: FIFO buffer of lenght "buffersize"
+		* CIRCULAR: circula FIFO buffer of lenght "buffersize"
+	* *policy*: policy of the locking system to be used
+		* LOCKED: guarantee mutually exclusive access
+		* UNSYNC: no synchronization applied
+	* *transport*: 
+		* LOCAL: shared memory for thread
+		* IPC: communication between processes (not yet implemented)
 
 
 * `activities` contains the collections of activity.
@@ -346,34 +357,48 @@ To do so you have to create an xml file with the following specifications:
 	</activity>
 </activities>
 ```
-* `activity`: each *activity* is associated with a thread and can contains multiple *components*. For each activity we specify how it has to be executed and the *components* to execute
+
 
 ```xml
 <activity>
-	<schedulepolicy activity="parallel" type="periodic" value="1000" />
+	<schedule activity="parallel" type="periodic" value="1000" />
 	<components>
-		<component>task_name</component>
-		<component>task_name</component>
+		<component name="task_name" />
+		<component name="another_task_name" />
 		...			
 	</components>
 </activity>
 ```
-
-* `schedulepolicy` has several attributes
-    * `activity`
-	    * *parallel*: executed in a new dedicated thread
-		* *sequential*: executed in the main process thread. No more than one sequential activity is allowed per application
-    * `type`
-	    * *periodic*: the activity run periodically with period "value" expressed in millisecond
-		* *triggered*: the activity run only when triggered by receiving data in an event port of one of its component
-            * NOTE: if a triggered activity contains more than one component when it is triggered it will execute all the component inside, no matter for which component the triggered was ment.	
-        * *value*: the period in millisecond.
-            * It is ignored if *type* if *triggered*
-		* *affinity*: id of the core where to pin the thread execution. Be sure that id < #cores 
-		* *exclusive_affinity*: id of the core where to exclusive pin the thread execution. All other CoCo thread will be excluded to execute on that core.
+* `activity`: each *activity* is associated with a thread and can contains multiple *components*. For each activity we specify how it has to be executed and the *components* to execute
+	* `schedule` has several attributes
+	    * `activity`
+		    * *parallel*: executed in a new dedicated thread
+			* *sequential*: executed in the main process thread. No more than one sequential activity is allowed per application
+	    * `type`
+		    * *periodic*: the activity run periodically with period "value" expressed in millisecond
+			* *triggered*: the activity run only when triggered by receiving data in an event port of one of its component
+	            * NOTE: if a triggered activity contains more than one component when it is triggered it will execute all the component inside, no matter for which component the triggered was ment.	
+	        * *value*: the period in millisecond.
+	            * It is ignored if *type* if *triggered*
+			* *affinity*: id of the core where to pin the thread execution. Be sure that id < #cores 
+			* *exclusive_affinity*: id of the core where to exclusive pin the thread execution. All other CoCo thread will be excluded to execute on that core.
           
-
-
+```xml
+<pipeline>
+	<schedule activity="parallel/sequential"/>
+	<components>
+		<component name="task_name1" out="out_port"/>
+		<component name="task_name2" in="in_port" out="out_port"/>
+		<component name="task_name3" in="in_port"/>		
+		...			
+	</components>
+</activity>
+```
+* `pipeline`: this tag allows to specify pipelines of tasks. It doesn't add semantic to the execution as it is possible to create a pipeline using *activity* and the proper connections. The use of this tag allows to be more clear and to avoid errors, such as forgetting connections or not setting an activity as triggered.
+	* `schedule`: allows to specify whether the components will be parallel or executed sequential.
+		* `activity`
+			* `parallel`:  each component will run on a separate thread
+			* `sequential`: all the components will run on the same thread, can be useful when the tasks have a computation time much lower than the service time
 	
 * `includes`: allows to include others XML configuration files with the same structures and load the components and connections specified in the file. For each specified include file all the resource paths components and connections will be loaded. Any activity specifications or log configuration will be ignored. It is possible to specify connections between components described in different files, as well as associate them in activities. This is because all the actual loading is done after all the XML files have been parsed. Of course an included XML file can includes other xml files.
 ```xml
@@ -429,7 +454,11 @@ To run a CoCo application it is possible to use either the `coco_launcher` execu
 	Xml file with the configurations of the application.
 * -p [ --profiling ] [=arg(=5)] 
 	Enable the collection of statistics of the execution of each component. The information are printed every 5 seconds, to change this value pass a new time to the option.
+* -w [--web_server] [=arg(=7707)]
+	Start the web server on port *arg*. When the we web server is running all the information usually printed in the shell will be visualized in the browser.
 * -g [ --graph ] arg          
 	Create the graph of the various components and of their connections.
+* -d [--disable] args
+	Accept a list of components name. These components will be not instantiated. This applies both to normal task and to peers. 
  
 
