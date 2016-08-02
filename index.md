@@ -53,8 +53,8 @@ Folder Structure
     * web_server
 * launcher: contains the executable that allows to launch a CoCo application
 * ros_launcher: same as launcher but as ROS node
-* extern: the xml parser library
-* samples: contains two sample components togheter with the configuration file to launch them
+* extern: the xml and json parser library and the moongose library to create the web server
+* samples: contains some sample components together with the configuration files to launch them
 
 
 Installation
@@ -399,7 +399,36 @@ To do so you have to create an xml file with the following specifications:
 		* `activity`
 			* `parallel`:  each component will run on a separate thread
 			* `sequential`: all the components will run on the same thread, can be useful when the tasks have a computation time much lower than the service time
-	
+
+```xml
+<farm>
+    <schedule workers="3" />
+    <source>
+        <schedule type="periodic" value="500" exclusive_affinity="3" />
+        <component name="Task1" out="value_OUT" />
+    </source>
+    <pipeline>
+        <schedule activity="sequential" />
+        <components>
+            <component name="Task2" in="value_IN" out="value_OUT" />
+            <component name="Task3" in="value_IN" out="value_OUT" />
+            <component name="Task4" in="value_IN" out="value_OUT" />
+        </components>
+    </pipeline>
+    <gather>
+        <component name="Task5" in="value_IN" />
+    </gather>
+</farm>	
+```
+* `farm`: this tag allows the automatic creation of a farm of tasks. The farm  is a paradigm of the High-Performance Computing world that consists in instantiating multiple time the same node in order to be able to distribute the work on several of them. This comes in handy when the service time is much lower than the computation time, allowing to keep the source service time.
+	* `schedule`: the number of workers, how many instantiation of the same tasks the farm has to do.
+	* `source`: the source component that produce the data to be used by the workers.
+		* `schedule` the source component can be periodic (with any period) or triggered and can be pinned on a core via affinity.
+		* `out`: the output port that produces the data for the workers.
+	* `pipeline`: here we instantiate the pipeline that operates as worker and can be composed by one or many tasks. The syntax is exactly as the standard pipeline presented above.
+	* `gather`: it is the component that receives the data from the workers and it's execution is triggered by the data reception.
+		* `in`: input port on which to receive data.
+
 * `includes`: allows to include others XML configuration files with the same structures and load the components and connections specified in the file. For each specified include file all the resource paths components and connections will be loaded. Any activity specifications or log configuration will be ignored. It is possible to specify connections between components described in different files, as well as associate them in activities. This is because all the actual loading is done after all the XML files have been parsed. Of course an included XML file can includes other xml files.
 ```xml
 <includes>
@@ -414,7 +443,8 @@ To do so you have to create an xml file with the following specifications:
 CoCo provides logging features.
 
 * `COCO_LOG(level) << "this is a log " << i << ...`
-	Base log utility. Will be displayed only if *level* is specified in in the configuration.
+	Base log utility. Will be displayed only if *level* is specified in in the configuration. Automatically detect the component name executing the log command and record it; if not executed inside Task's method use
+	* `COCO_LOG(level, name)`
 * `COCO_DEBUG("name") << "this a debug message " << i << ...`
 	Used for debuggin messages. A *name* can be associate with it and will be displayed. `COCO_DEBUG` is disabled when the component is build in Release mode.
 * `COCO_ERR() << "this is a not serious error " << error << ...`
@@ -433,18 +463,17 @@ CoCo provide a set of utilities to measure time.
 	Stops the timer named *my_timer*. This however will not reset the timer *my_timer*.
 * `COCO_CLEAR_TIMER("my_timer")`
 	Resets the timer named *my_timer*.
-* `COCO_TIME_COUNT("my_timer")`
-	Returns the number of intervals measured for timer *my_timer*.
 * `COCO_TIME("my_timer")`
-	Returns the total measured time for the timer *my_timer*.
+	Returns the last measured elapsed time for the timer *my_timer*
 * `COCO_TIME_MEAN("my_timer")`
   Returns the mean execution time of each iteration of for the timer *my_timer*.
-* `COCO_TIME_VARIANCE("my_timer")`
-  Returns the variance of the execution time of each iteration of for the timer *my_timer*.
-* `COCO_SERVICE_TIME("my_timer")`
-  Returns the mean service time of the timer, i.e. returns the mean time between to consecutive starts of the timer *my_timer*.
-* `COCO_SERVICE_TIME_VARIANCE("my_timer")`
-  Returns the variance of the service time of the timer *my_timer*.
+* `COCO_TIME_STATISTICS("my_timer")`
+	  Returns an object *TimeStatistics* that contains all the information about the timer:
+	  * Number of iterations
+	  * Last measured elapsed time
+	  * Mean and variance elapsed time
+	  * Mean and variance service time
+	  * Min and max elapsed time
 
 
 ###CoCo Launch###
