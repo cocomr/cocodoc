@@ -478,16 +478,22 @@ CoCo provide a set of utilities to measure time.
 
 ###CoCo Launch###
 To run a CoCo application it is possible to use either the `coco_launcher` executable or the  `coco_ros_launcher_node` ROS node. Both the executables accepts several inputs:
-
-* -x [ --config_file ] arg
-	Xml file with the configurations of the application.
-* -p [ --profiling ] [=arg(=5)] 
-	Enable the collection of statistics of the execution of each component. The information are printed every 5 seconds, to change this value pass a new time to the option.
-* -w [--web_server] [=arg(=7707)]
-	Start the web server on port *arg*. When the we web server is running all the information usually printed in the shell will be visualized in the browser.
-* -g [ --graph ] arg          
-	Create the graph of the various components and of their connections.
-* -d [--disable] args
-	Accept a list of components name. These components will be not instantiated. This applies both to normal task and to peers. 
  
-
+* -h [ --help ]
+ Print help message and exit.
+* -x [ --config_file ] arg
+XML file with the configurations of the application.
+* -d [ --disabled ] arg 
+List of components that are going to be disabled in the execution
+* -p [ --profiling ] [=arg(=5)] 
+Enable the collection of statistics of the executions. Use only during debug as it slow down the performances.
+* -g [ --graph ] arg
+Create the graph of the various components and of their connections.
+*  -t [ --xml_template ] arg         
+Print the xml template for all the components contained in the library.
+*  -w [ --web_server ] [=arg(=7707)]
+ Instantiate a web server to the specified port that allows to view statics about the executions.
+* -r [ --web_root ] arg
+Set document root for web server, not needed if the the library has been installed.
+* -l [ --latency ] arg 
+Set the two task between which calculate the latency. Peer are not valid.
