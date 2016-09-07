@@ -11,9 +11,6 @@ It has been widely used in robotics applications, ranging from augmented reality
 
 It is also compatible with ROS allowing it to be used in any kind of high-level control applications.
 
-##Modules
-[Computer Vision]
-
 Why and What
 ------------
 CoCo desing has been inspired by the Orocos framework, but with a different aims. While the Orocos framework targets (hard) real-time application as low level robotic control, thus requiring special Linux kernel to be executed, CoCo aims at providing a framework for high level soft real-time application as robotic vision, haptic rendering and sensors integration.
