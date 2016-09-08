@@ -494,3 +494,18 @@ Print the xml template for all the components contained in the library.
 Set document root for web server, not needed if the the library has been installed.
 * -l [ --latency ] arg 
 Set the two task between which calculate the latency. Peer are not valid.
+
+
+###Web Viewer###
+If CoCo is launcher with the *-w[port number (default 7707)]* options a web based visualization tool is available at the address http://localhost:7707. If you don't have installed the library you have to specify to CoCo where the viewer file are by passing the path of the folder coco/cocoaine with the *-r* option.
+In the browser it is possible to see the graph with all the tasks and peers, their allocation inside the activities and the connections between the ports.
+![alt text](https://bytebucket.org/eruffaldi/cocodoc/raw/07fa65a21d276d4b002b568f350293c0a6252df1/images/graph.png) 
+
+The editor provides the redirect of all the log messages, in the futures it will be possible to filter the messages in the browser accordingly to the level and the task producing them:
+![alt text](https://bytebucket.org/eruffaldi/cocodoc/raw/07fa65a21d276d4b002b568f350293c0a6252df1/images/log.png) 
+
+The real important features is displaying of the information regarding the timing of the tasks. This info is shown both textual:
+![alt text](https://bytebucket.org/eruffaldi/cocodoc/raw/07fa65a21d276d4b002b568f350293c0a6252df1/images/statistics.png) 
+
+It is also possible to see the live  execution time of each task with a plot:
+![alt text](https://bytebucket.org/eruffaldi/cocodoc/raw/07fa65a21d276d4b002b568f350293c0a6252df1/images/plot.png) 
