@@ -37,7 +37,6 @@ The main characteristic of CoCo are:
 * Web based visualization tool to visualize components connections, timing statistics via tables and graphics
 
 
-
 Simple and Powerful!!
 
 Folder Structure
@@ -436,6 +435,15 @@ To do so you have to create an xml file with the following specifications:
 ```
 		
 ### Utils ###
+####Memory####
+CoCo provides an utilities to help users implementing zero-copy communications and a smart utilization of memory. Thanks to *shared_ptr* it is possible to exchange data between threads and components without copying it. However this comes at the cost of having to requeste new data to the OS every time  we need to send  information and than this data is deallocated once the receiving task has completed its use. Let's suppose we want to exchange a full HD RGB images between two tasks, at the frequency of the camera, usually 30Hz, this means that every 33 ms we need to ask the operating system for roughly 6.2MB of memory which is then released when the receiving task has completed its work. This influences very much performances  degradating overall latency. This problem can be overcome using the `coco::util::VectorPool<T>` class to manage memory.
+
+`std::shared_ptr<std::vector<T> > VectorPool<T>::get(unsigned int k)` return a *shared_ptr* to a vector of length *k* and type *T*. *get* is a static member of a singleton class (shared by all the components) that contains a pool of memory slots. When the user releases the *shared_ptr* the memory pointed by it is not released but it is inserted inside the *VectorPool* pool. In this way after a transient initial period all the memory needed by the application has already been allocated and when the user ask for memory with the *get* function it is simply picked from the memory pool.
+
+If you need to allocate a full HD memory you can ask for:
+`auto image_buffer = coco::util::VectorPool<uint8_t>::get(1920*1080*3);`
+
+
 ####<a name="logging"></a> Logging ####
 CoCo provides logging features.
 
